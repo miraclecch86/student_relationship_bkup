@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학급 관리</title>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --background-light: #f9fafb;
+            --card-background: #ffffff;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-light);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        /* 학급 추가 섹션 */
+        .class-input {
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .class-input input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            background: var(--card-background);
+            color: var(--text-primary);
+        }
+
+        .class-input input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .class-input button {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .class-input button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 학급 목록 */
+        #classList {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .class-card {
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .class-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .class-header {
+            padding: 1.25rem;
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .class-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .class-content {
+            padding: 1.25rem;
+        }
+
+        .class-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.75rem;
+            background: var(--background-light);
+            border-radius: var(--radius-md);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .class-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .class-actions button {
+            flex: 1;
+            padding: 0.5rem;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .edit-btn {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+        }
+
+        .edit-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .delete-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+        }
+
+        .delete-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* 모달 */
+        #editModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        #editModal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        #editModal.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .close:hover {
+            color: var(--text-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            width: 100%;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            width: 100%;
+            text-align: left;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .save-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .cancel-btn {
+            background: var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .cancel-btn:hover {
+            background: #d1d5db;
+        }
+
+        /* 애니메이션 */
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .class-list {
+                grid-template-columns: 1fr;
+            }
+
+            .class-input {
+                flex-direction: column;
+            }
+
+            .class-input button {
+                width: 100%;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>학급 관리</h1>
+        
+        <div class="class-input">
+            <input type="text" id="className" placeholder="학급 이름" onkeypress="handleKeyPress(event)">
+            <button onclick="addClass()">학급 추가</button>
+        </div>
+        
+        <div id="classList" class="class-list">
+            <!-- 학급 카드들이 여기에 동적으로 추가됩니다 -->
+        </div>
+    </div>
+
+    <!-- 학급 수정 모달 -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>학급 수정</h2>
+            <div class="form-group">
+                <label for="editClassName">학급 이름</label>
+                <input type="text" id="editClassName">
+            </div>
+            <div class="modal-actions">
+                <button class="save-btn" onclick="saveEdit()">저장</button>
+                <button class="cancel-btn" onclick="closeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 전역 변수
+        let classes = [];
+        let editingClassId = null;
+
+        // 페이지 로드 시 데이터 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+        });
+
+        // 데이터 로드
+        async function loadData() {
+            try {
+                const response = await fetch('/api/classes');
+                const data = await response.json();
+                classes = data;
+                // 각 학급의 주간식 질문 수를 로드
+                await loadWeeklyQuestionCounts();
+                updateClassList();
+            } catch (error) {
+                console.error('Error loading classes:', error);
+            }
+        }
+
+        // 각 학급의 주간식 질문 수 로드
+        async function loadWeeklyQuestionCounts() {
+            try {
+                for (let i = 0; i < classes.length; i++) {
+                    const classData = classes[i];
+                    const response = await fetch(`/api/classes/${classData.id}/students`);
+                    const students = await response.json();
+                    
+                    // 로컬 스토리지에서 주간식 질문 먼저 확인
+                    const savedQuestions = localStorage.getItem(`weekly_questions_class_${classData.id}`);
+                    let questionCount = 0;
+                    
+                    if (savedQuestions) {
+                        // 로컬 스토리지에 저장된 질문 배열 길이로 카운트
+                        const questionsArray = JSON.parse(savedQuestions);
+                        questionCount = questionsArray.length;
+                        console.log(`클래스 ${classData.id}의 로컬 스토리지 질문 수: ${questionCount}`);
+                    }
+                    
+                    // API에서도 확인 (없을 경우를 대비)
+                    if (questionCount === 0 && students && students.length > 0) {
+                        try {
+                            // 첫 번째 학생의 주간식 데이터를 가져와서 질문 수 확인
+                            const weeklyFormResponse = await fetch(`/api/students/${students[0].id}/weekly-form`);
+                            const responseText = await weeklyFormResponse.text();
+                            
+                            console.log(`클래스 ${classData.id}의 주간식 응답:`, responseText);
+                            
+                            // 빈 응답이 아닌 경우에만 파싱 시도
+                            if (responseText && responseText.trim()) {
+                                const weeklyFormData = JSON.parse(responseText);
+                                
+                                // 주간식 질문 개수 계산 (additional_question_로 시작하는 키 카운트)
+                                const apiQuestionCount = Object.keys(weeklyFormData || {})
+                                    .filter(key => key.startsWith('additional_question_')).length;
+                                
+                                console.log(`클래스 ${classData.id}의 API 질문 수: ${apiQuestionCount}`);
+                                
+                                // 둘 중 더 큰 값 사용
+                                questionCount = Math.max(questionCount, apiQuestionCount);
+                            }
+                        } catch (parseError) {
+                            console.error('주간식 데이터 파싱 오류:', parseError);
+                        }
+                    }
+                    
+                    // classes 배열에 질문 수 저장
+                    classData.weekly_questions_count = questionCount;
+                    console.log(`클래스 ${classData.id} 최종 질문 수: ${questionCount}`);
+                }
+            } catch (error) {
+                console.error('Error loading weekly question counts:', error);
+            }
+        }
+
+        // 학급 목록 업데이트
+        function updateClassList() {
+            const classList = document.getElementById('classList');
+            classList.innerHTML = '';
+            
+            classes.forEach(classData => {
+                const card = document.createElement('div');
+                card.className = 'class-card fade-in';
+                card.onclick = () => window.location.href = `/relationships/${classData.id}`;
+                card.innerHTML = `
+                    <div class="class-header">
+                        <h2 class="class-name">${classData.name}</h2>
+                    </div>
+                    <div class="class-content">
+                        <div class="class-stats">
+                            <div class="stat-item">
+                                <div class="stat-label">전체 학생</div>
+                                <div class="stat-value">${classData.student_count || 0}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">주간식</div>
+                                <div class="stat-value">${classData.weekly_questions_count || 0}개</div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <button class="edit-btn" onclick="event.stopPropagation(); showEditModal(${classData.id})">수정</button>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteClass(${classData.id})">삭제</button>
+                        </div>
+                    </div>
+                `;
+                classList.appendChild(card);
+            });
+        }
+
+        // 학급 추가
+        async function addClass() {
+            const input = document.getElementById('className');
+            const name = input.value.trim();
+            
+            if (name) {
+                try {
+                    const response = await fetch('/api/classes', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: name,
+                            description: ''
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const newClass = await response.json();
+                        classes.push(newClass);
+                        updateClassList();
+                        input.value = '';
+                    }
+                } catch (error) {
+                    console.error('Error adding class:', error);
+                }
+            }
+        }
+
+        // 수정 모달 표시
+        function showEditModal(classId) {
+            editingClassId = classId;
+            const classData = classes.find(c => c.id === classId);
+            
+            document.getElementById('editClassName').value = classData.name;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        // 모달 닫기
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            editingClassId = null;
+        }
+
+        // 수정 사항 저장
+        async function saveEdit() {
+            const newName = document.getElementById('editClassName').value.trim();
+            
+            if (newName && editingClassId) {
+                try {
+                    const response = await fetch(`/api/classes/${editingClassId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: newName
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        await loadData(); // 전체 데이터 새로고침
+                        closeModal();
+                    }
+                } catch (error) {
+                    console.error('Error updating class:', error);
+                }
+            }
+        }
+
+        // 학급 삭제
+        async function deleteClass(classId) {
+            if (confirm('정말로 이 학급을 삭제하시겠습니까?')) {
+                try {
+                    const response = await fetch(`/api/classes/${classId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        classes = classes.filter(c => c.id !== classId);
+                        updateClassList();
+                    }
+                } catch (error) {
+                    console.error('Error deleting class:', error);
+                }
+            }
+        }
+
+        // 엔터키 이벤트 핸들러 추가
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addClass();
+            }
+        }
+    </script>
+</body>
+</html> 

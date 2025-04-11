@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>학생 관계 설정</title>
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --background-light: #f9fafb;
+            --card-background: #ffffff;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-light);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .relationship-card {
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .relationship-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .relationship-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .back-button {
+            padding: 0.5rem 1rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+            background: var(--primary-dark);
+        }
+
+        .relationship-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .relationship-item {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0.7rem;
+            transition: all 0.2s ease;
+        }
+
+        .relationship-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .relationship-buttons {
+            display: flex;
+            gap: 0.3rem;
+        }
+
+        .relationship-button {
+            flex: 1;
+            padding: 0.35rem 0.2rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .relationship-button:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .relationship-button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .alert {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            color: white;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .alert.show {
+            opacity: 1;
+        }
+
+        .alert.success {
+            background: var(--success-color);
+        }
+
+        .alert.error {
+            background: var(--danger-color);
+        }
+
+        /* 주간식 폼 스타일 추가 */
+        .weekly-form {
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .weekly-form h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: vertical;
+            min-height: 100px;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .save-button {
+            display: block;
+            width: 100%;
+            max-width: 200px;
+            margin: 2rem auto;
+            padding: 0.875rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .save-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* 주간식 추가 폼 스타일 */
+        .weekly-form-add {
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .weekly-form-add h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .add-question-form {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .add-question-form input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+        }
+
+        .add-question-form input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .add-question-form button {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .add-question-form button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* 삭제 버튼 스타일 */
+        .form-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .delete-question {
+            padding: 0.25rem 0.5rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .delete-question:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* 하단 돌아가기 버튼 스타일 */
+        .bottom-back-button {
+            display: block;
+            width: 100%;
+            max-width: 250px;
+            margin: 2rem auto;
+            padding: 0.875rem 1.75rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .bottom-back-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        @media (min-width: 1200px) {
+            .relationship-list {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        @media (min-width: 992px) and (max-width: 1199px) {
+            .relationship-list {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 991px) {
+            .relationship-list {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 576px) and (max-width: 767px) {
+            .relationship-list {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 575px) {
+            .relationship-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="relationship-card">
+            <div class="relationship-header">
+                <h2>{{ student.name }}님의 관계 설정</h2>
+                <button class="back-button" onclick="goBack()">돌아가기</button>
+            </div>
+            <div id="relationshipList" class="relationship-list">
+                <!-- 다른 학생들과의 관계가 여기에 동적으로 추가됩니다 -->
+            </div>
+        </div>
+
+        <!-- 주간식 추가 폼 -->
+        <div class="weekly-form-add">
+            <h2>주간식 질문 추가</h2>
+            <div class="add-question-form">
+                <input type="text" id="newQuestion" placeholder="새로운 주간식 질문을 입력하세요" onkeypress="handleQuestionKeyPress(event)">
+                <button onclick="addQuestion()">추가</button>
+            </div>
+        </div>
+
+        <!-- 주간식 내용 입력 폼 -->
+        <div class="weekly-form">
+            <h2>주간식 내용 입력</h2>
+            <form id="weeklyForm">
+                <div id="dynamicQuestions">
+                    <!-- 동적으로 추가된 질문들이 여기에 추가됩니다 -->
+                </div>
+            </form>
+            <button class="bottom-back-button" onclick="saveAndGoBack()">돌아가기</button>
+        </div>
+    </div>
+
+    <div id="alert" class="alert"></div>
+
+    <script>
+        // 전역 변수
+        let currentStudent = {{ student | tojson }};
+        let allStudents = {{ other_students | tojson }};
+        let relationships = {{ relationships | tojson }};
+        let currentClassId = {{ class_.id }};
+
+        // 추가된 질문 목록
+        let additionalQuestions = [];
+
+        // 자동 저장 타이머
+        let autoSaveTimer;
+
+        // 페이지 로드 시 실행
+        window.onload = function() {
+            updateRelationshipList();
+            loadWeeklyForm();
+            loadQuestionsFromLocalStorage();
+            setupAutoSave();
+        };
+
+        // 관계 목록 업데이트
+        function updateRelationshipList() {
+            const relationshipList = document.getElementById('relationshipList');
+            relationshipList.innerHTML = '';
+            
+            allStudents.forEach(student => {
+                const div = document.createElement('div');
+                div.className = 'relationship-item';
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'student-name';
+                nameDiv.textContent = student.name;
+                
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.className = 'relationship-buttons';
+                
+                // 현재 학생이 친구에게 설정한 관계 찾기 (일방향)
+                const currentRelationship = relationships.find(
+                    r => r.student_id === currentStudent.id && r.friend_id === student.id
+                );
+                
+                ['친해', '보통', '안친해'].forEach(type => {
+                    const button = document.createElement('button');
+                    button.className = 'relationship-button';
+                    button.textContent = type;
+                    
+                    // 현재 관계 표시
+                    if (currentRelationship && currentRelationship.relationship_type === type) {
+                        button.classList.add('active');
+                    }
+                    
+                    button.onclick = () => setRelationship(student.id, type);
+                    buttonsDiv.appendChild(button);
+                });
+                
+                div.appendChild(nameDiv);
+                div.appendChild(buttonsDiv);
+                relationshipList.appendChild(div);
+            });
+        }
+
+        // 관계 설정
+        async function setRelationship(friendId, type) {
+            try {
+                const response = await fetch('/api/relationships', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        student_id: currentStudent.id,
+                        friend_id: friendId,
+                        relationship_type: type
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('관계 설정에 실패했습니다.');
+                }
+
+                const newRelationship = await response.json();
+                
+                // 관계 목록 업데이트
+                const existingIndex = relationships.findIndex(
+                    r => r.student_id === currentStudent.id && r.friend_id === friendId
+                );
+                
+                if (existingIndex !== -1) {
+                    relationships[existingIndex] = newRelationship;
+                } else {
+                    relationships.push(newRelationship);
+                }
+                
+                updateRelationshipList();
+                showAlert('관계가 설정되었습니다.', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert(error.message, 'error');
+            }
+        }
+
+        // 알림 표시
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            
+            setTimeout(() => {
+                alert.className = 'alert';
+            }, 3000);
+        }
+
+        // 뒤로 가기
+        function goBack() {
+            window.location.href = `/relationships/${currentClassId}`;
+        }
+
+        // 엔터키로 질문 추가
+        function handleQuestionKeyPress(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addQuestion();
+            }
+        }
+
+        // 로컬 스토리지에서 질문 불러오기
+        function loadQuestionsFromLocalStorage() {
+            const savedQuestions = localStorage.getItem(`weekly_questions_class_${currentClassId}`);
+            if (savedQuestions) {
+                additionalQuestions = JSON.parse(savedQuestions);
+                recreateForm();
+            }
+        }
+
+        // 로컬 스토리지에 질문 저장
+        function saveQuestionsToLocalStorage() {
+            localStorage.setItem(`weekly_questions_class_${currentClassId}`, JSON.stringify(additionalQuestions));
+        }
+
+        // 페이지 로드 시 저장된 추가 질문들과 답변 불러오기
+        async function loadWeeklyForm() {
+            try {
+                // 1. 서버에서 데이터 불러오기
+                const response = await fetch(`/api/students/${currentStudent.id}`);
+                if (!response.ok) throw new Error('데이터를 불러올 수 없습니다.');
+                
+                const data = await response.json();
+                const weeklyForm = data.weekly_form || {};
+
+                console.log('서버에서 불러온 데이터:', weeklyForm);
+
+                // 2. 질문 목록 설정
+                const savedQuestions = localStorage.getItem(`weekly_questions_class_${currentClassId}`);
+                if (savedQuestions) {
+                    additionalQuestions = JSON.parse(savedQuestions);
+                } else {
+                    additionalQuestions = [];
+                    Object.keys(weeklyForm).forEach(key => {
+                        if (key.startsWith('additional_question_')) {
+                            const questionData = weeklyForm[key];
+                            if (!additionalQuestions.includes(questionData.question)) {
+                                additionalQuestions.push(questionData.question);
+                            }
+                        }
+                    });
+                    saveQuestionsToLocalStorage();
+                }
+
+                // 3. 폼 재생성
+                recreateForm();
+
+                // 4. 답변 설정
+                Object.keys(weeklyForm).forEach(key => {
+                    if (key.startsWith('additional_question_')) {
+                        const textarea = document.getElementById(key);
+                        if (textarea && weeklyForm[key].answer) {
+                            textarea.value = weeklyForm[key].answer;
+                        }
+                    }
+                });
+
+                // 5. 로컬 스토리지에 답변 저장
+                localStorage.setItem(
+                    `weekly_answers_${currentClassId}_${currentStudent.id}`,
+                    JSON.stringify(weeklyForm)
+                );
+            } catch (error) {
+                console.error('Error:', error);
+                // 서버 로드 실패 시 로컬 스토리지에서 복구 시도
+                const savedAnswers = localStorage.getItem(
+                    `weekly_answers_${currentClassId}_${currentStudent.id}`
+                );
+                if (savedAnswers) {
+                    const answers = JSON.parse(savedAnswers);
+                    Object.keys(answers).forEach(key => {
+                        const textarea = document.getElementById(key);
+                        if (textarea && answers[key].answer) {
+                            textarea.value = answers[key].answer;
+                        }
+                    });
+                }
+                showAlert('서버에서 데이터를 불러오는데 실패했습니다. 로컬 데이터를 사용합니다.', 'error');
+            }
+        }
+
+        // 폼에 새 질문 추가
+        function addQuestionToForm(question, index) {
+            const dynamicQuestions = document.getElementById('dynamicQuestions');
+            
+            const formGroup = document.createElement('div');
+            formGroup.className = 'form-group';
+            formGroup.id = `additional_${index}`;
+            
+            const header = document.createElement('div');
+            header.className = 'form-group-header';
+            
+            const label = document.createElement('label');
+            label.htmlFor = `additional_question_${index}`;
+            label.textContent = question;
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-question';
+            deleteButton.textContent = '삭제';
+            deleteButton.onclick = () => removeQuestion(index);
+            
+            header.appendChild(label);
+            header.appendChild(deleteButton);
+            
+            const textarea = document.createElement('textarea');
+            textarea.id = `additional_question_${index}`;
+            textarea.name = `additional_question_${index}`;
+            
+            formGroup.appendChild(header);
+            formGroup.appendChild(textarea);
+            
+            dynamicQuestions.appendChild(formGroup);
+            return textarea;
+        }
+
+        // 질문 삭제
+        function removeQuestion(index) {
+            if (confirm('이 질문을 삭제하면 모든 학생의 답변이 삭제됩니다.\n정말 삭제하시겠습니까?')) {
+                // 질문 목록에서 제거
+                additionalQuestions.splice(index, 1);
+                
+                // 로컬 스토리지 업데이트
+                saveQuestionsToLocalStorage();
+                
+                // 폼 다시 생성
+                recreateForm();
+                
+                showAlert('질문이 삭제되었습니다.', 'success');
+            }
+        }
+
+        // 새 질문 추가
+        function addQuestion() {
+            const input = document.getElementById('newQuestion');
+            const question = input.value.trim();
+            
+            if (question) {
+                // 중복 질문 체크
+                if (additionalQuestions.includes(question)) {
+                    showAlert('이미 존재하는 질문입니다.', 'error');
+                    return;
+                }
+
+                // 질문 목록에 추가
+                additionalQuestions.push(question);
+                
+                // 주간식 폼에 새 질문 추가
+                addQuestionToForm(question, additionalQuestions.length - 1);
+                
+                // 로컬 스토리지에 저장
+                saveQuestionsToLocalStorage();
+                
+                // 입력 필드 초기화
+                input.value = '';
+                
+                showAlert('새로운 질문이 추가되었습니다.', 'success');
+            }
+        }
+
+        // 폼 다시 생성
+        function recreateForm() {
+            const dynamicQuestions = document.getElementById('dynamicQuestions');
+            dynamicQuestions.innerHTML = '';
+            
+            // 질문들 다시 추가
+            additionalQuestions.forEach((question, index) => {
+                addQuestionToForm(question, index);
+            });
+
+            // 저장된 답변 불러오기
+            loadSavedAnswers();
+        }
+
+        // 저장된 답변 불러오기
+        async function loadSavedAnswers() {
+            try {
+                const response = await fetch(`/api/students/${currentStudent.id}/weekly-form`);
+                if (!response.ok) throw new Error('데이터를 불러올 수 없습니다.');
+                
+                let responseText = await response.text();
+                console.log('서버에서 불러온 응답 텍스트:', responseText);
+                
+                // 빈 응답인 경우 빈 객체 사용
+                if (!responseText.trim()) {
+                    console.log('빈 응답 수신, 빈 객체 사용');
+                    return;
+                }
+                
+                // JSON 파싱
+                try {
+                    const weeklyForm = JSON.parse(responseText);
+                    console.log('서버에서 불러온 주간식 답변:', weeklyForm);
+                    
+                    // 추가 질문 답변 설정
+                    additionalQuestions.forEach((question, index) => {
+                        const key = `additional_question_${index}`;
+                        const textarea = document.getElementById(key);
+                        if (textarea && weeklyForm[key] && weeklyForm[key].answer) {
+                            textarea.value = weeklyForm[key].answer;
+                        }
+                    });
+            
+                    // 로컬 스토리지에도 저장
+                    localStorage.setItem(
+                        `weekly_answers_${currentClassId}_${currentStudent.id}`,
+                        JSON.stringify(weeklyForm)
+                    );
+                } catch (parseError) {
+                    console.error('JSON 파싱 오류:', parseError);
+                    throw new Error('응답 데이터 형식이 올바르지 않습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // 서버에서 로드 실패 시 로컬 스토리지에서 시도
+                loadAnswersFromLocalStorage();
+                showAlert('서버에서 답변을 불러오는데 실패했습니다. 로컬 데이터를 사용합니다.', 'error');
+            }
+        }
+
+        // 답변을 로컬 스토리지에 저장
+        function saveAnswersToLocalStorage(answers) {
+            localStorage.setItem(
+                `weekly_answers_${currentClassId}_${currentStudent.id}`,
+                JSON.stringify(answers)
+            );
+        }
+
+        // 답변을 로컬 스토리지에서 불러오기
+        function loadAnswersFromLocalStorage() {
+            const savedAnswers = localStorage.getItem(
+                `weekly_answers_${currentClassId}_${currentStudent.id}`
+            );
+            if (savedAnswers) {
+                const answers = JSON.parse(savedAnswers);
+                Object.keys(answers).forEach(key => {
+                    const answerElement = document.getElementById(key);
+                    if (answerElement) {
+                        answerElement.value = answers[key].answer || '';
+                    }
+                });
+            }
+        }
+
+        // 자동 저장 설정
+        function setupAutoSave() {
+            const form = document.getElementById('weeklyForm');
+            let saveTimeout = null;
+
+            form.addEventListener('input', (event) => {
+                // textarea 변경 시에만 자동 저장
+                if (event.target.tagName === 'TEXTAREA') {
+                    if (saveTimeout) {
+                        clearTimeout(saveTimeout);
+                    }
+                    
+                    saveTimeout = setTimeout(async () => {
+                        try {
+                            await saveAll();
+                            console.log('자동 저장 완료');
+                        } catch (error) {
+                            console.error('자동 저장 실패:', error);
+                        }
+                    }, 2000); // 2초 후 저장
+                }
+            });
+        }
+
+        // 저장하고 돌아가기
+        async function saveAndGoBack() {
+            try {
+                const saveResult = await saveAll();
+                
+                // 저장이 성공한 경우에만 페이지 이동
+                if (saveResult) {
+                    // 저장이 완료된 후 돌아가기
+                    setTimeout(() => {
+                        goBack();
+                    }, 1000); // 저장 완료를 위해 1초 대기
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('저장 중 오류가 발생했습니다.', 'error');
+            }
+        }
+
+        // 기존 saveAll 함수 수정
+        async function saveAll() {
+            try {
+                const formData = {};
+                
+                // 추가 질문 데이터 수집
+                additionalQuestions.forEach((question, index) => {
+                    const textarea = document.getElementById(`additional_question_${index}`);
+                    if (textarea) {
+                        formData[`additional_question_${index}`] = {
+                            question: question,
+                            answer: textarea.value || ''
+                        };
+                    }
+                });
+
+                console.log('저장할 데이터:', formData);
+
+                // 서버에 데이터 저장
+                const response = await fetch(`/api/students/${currentStudent.id}/weekly-form`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                // 서버 응답 확인
+                let responseText;
+                try {
+                    responseText = await response.text();
+                    console.log('서버 응답 텍스트:', responseText);
+                    
+                    // JSON 파싱 시도
+                    const responseData = JSON.parse(responseText);
+                    console.log('서버 응답 데이터:', responseData);
+                    
+                    if (!response.ok) {
+                        throw new Error(responseData.error || '데이터 저장에 실패했습니다.');
+                    }
+                    
+                    // 로컬 스토리지에도 저장
+                    localStorage.setItem(
+                        `weekly_answers_${currentClassId}_${currentStudent.id}`,
+                        JSON.stringify(formData)
+                    );
+
+                    showAlert('저장되었습니다.', 'success');
+                    return true; // 저장 성공
+                } catch (parseError) {
+                    console.error('응답 파싱 실패:', parseError);
+                    console.log('원본 응답:', responseText);
+                    throw new Error('서버 응답을 처리할 수 없습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert(error.message, 'error');
+                return false; // 저장 실패
+            }
+        }
+    </script>
+</body>
+</html> 
